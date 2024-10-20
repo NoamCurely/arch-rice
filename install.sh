@@ -8,7 +8,6 @@ NC='\033[0m'
 # Mettre à jour le système
 sudo pacman -Syu
 
-# Vérifier si la mise à jour s'est bien passée
 if [ $? -eq 0 ]; then
   echo -e "${GREEN}✔️ Successfully updated the system.${NC}"
 else
@@ -16,15 +15,43 @@ else
   exit 1
 fi
 
-# Installation des paquets essentiels via yay
+# Installation des paquets essentiels
 echo -e "${BLUE}Installation des paquets essentiels...${NC}"
-yay -S --noconfirm hyprland waybar alacritty base-devel git wayland wayland-protocols libinput wofi swaylock xdg-desktop-portal-hyprland
+sudo pacman -S --noconfirm hyprland waybar alacritty picom base-level git wayland wyland-protocols libinput wofi swaylock xdg-desktop-portal-hyprland mesa
+
+# Vérifier les pilotes graphiques
+if lspci | grep -q "NVIDIA"; then
+    echo -e "${BLUE}Installing NVIDIA drivers...${NC}"
+    sudo pacman -S --noconfirm nvidia nvidia-utils
+elif lspci | grep -q "AMD"; then
+    echo -e "${BLUE}Installing AMD drivers...${NC}"
+    sudo pacman -S --noconfirm xf86-video-amdgpu
+elif lspci | grep -q "Intel"; then
+    echo -e "${BLUE}Installing Intel drivers...${NC}"
+    sudo pacman -S --noconfirm mesa
+else
+    echo -e "${RED}❌ Unknown graphics card. Please install the appropriate drivers manually.${NC}"
+    exit 1
+fi
+
+# Vérification des permissions d'accès au matériel
+if ! groups $USER | grep -q "\<video\>"; then
+    echo -e "${BLUE}Adding user to the video group...${NC}"
+    sudo usermod -aG video $USER
+    echo -e "${GREEN}✔️ User added to video group. Please log out and log back in.${NC}"
+fi
+
+# Vérification des variables d'environnement
+echo -e "${BLUE}Setting up environment variables...${NC}"
+{
+    echo "export WAYLAND_DISPLAY=wayland-0"
+    echo "export XDG_SESSION_TYPE=wayland"
+} >> ~/.bashrc
 
 # Création des dossiers de configuration
-echo -e "${BLUE}Création des dossiers de configuration...${NC}"
 CONFIG_DIR="$HOME/.config/hypr"
 mkdir -p "$CONFIG_DIR"
-cp ./config/hyprland/hyprland.conf "$CONFIG_DIR/hyprland.conf"
+cp /usr/share/hyprland/hyprland.conf "$CONFIG_DIR/hyprland.conf"
 
 # Vérifier si le fichier de configuration a été créé
 if [ -f "$CONFIG_DIR/hyprland.conf" ]; then
@@ -34,7 +61,6 @@ else
     exit 1
 fi
 
-# Optionnel : Démarrer Hyprland (ne pas utiliser exec dans ce contexte si le script est exécuté dans une session Xorg)
-echo -e "${GREEN}Installation terminée. Vous pouvez lancer Hyprland manuellement.${NC}"
+# Démarrer Hyprland (optionnel)
 echo -e "${GREEN}Starting Hyprland...${NC}"
 exec Hyprland
