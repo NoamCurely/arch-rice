@@ -8,11 +8,11 @@ fi
 
 # Fonction pour vérifier si un paquet est installé, sinon l'installer
 install_if_missing() {
-  if ! pacman -Qi $1 &>/dev/null; then
-    echo "Installing $1..."
-    pacman -S --noconfirm $1
+  if ! pacman -Qi "$1" &>/dev/null; then
+    echo "Installation de $1..."
+    pacman -S --noconfirm "$1"
   else
-    echo "$1 is already installed."
+    echo "$1 est déjà installé."
   fi
 }
 
@@ -20,26 +20,14 @@ install_if_missing() {
 echo "Mise à jour du système..."
 pacman -Syu --noconfirm
 
-# Installer les prérequis pour yay
-echo "Installation des prérequis pour yay..."
+# Installer les prérequis
+echo "Installation des prérequis..."
 install_if_missing base-devel
 install_if_missing git
 
-# Installation de yay (si non installé)
-if ! command -v yay &> /dev/null; then
-  echo "Installing yay (AUR helper)..."
-  git clone https://aur.archlinux.org/yay.git
-  cd yay
-  makepkg -si --noconfirm
-  cd ..
-  rm -rf yay
-else
-  echo "yay est déjà installé."
-fi
-
-# Installation des paquets nécessaires avec yay et pacman
+# Installation des paquets nécessaires avec pacman
 echo "Installation des paquets essentiels..."
-yay -S --noconfirm hyprland waybar terminator neofetch cava tela-circle-icon-theme catppuccin-gtk-theme-mocha rofi swaybg wofi noto-fonts noto-fonts-emoji ttf-iosevka-nerd
+pacman -S --noconfirm hyprland waybar terminator neofetch cava tela-circle-icon-theme catppuccin-gtk-theme-mocha rofi swaybg wofi noto-fonts noto-fonts-emoji ttf-iosevka-nerd
 
 # Création des dossiers de configuration si besoin
 echo "Création des dossiers de configuration..."
