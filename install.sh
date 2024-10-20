@@ -15,9 +15,13 @@ else
   exit 1
 fi
 
+# Installation de Wayland
+echo -e "${BLUE}Installing Wayland...${NC}"
+sudo pacman -S --noconfirm wayland xorg-server
+
 # Installation des paquets essentiels
 echo -e "${BLUE}Installation des paquets essentiels...${NC}"
-sudo pacman -S --noconfirm hyprland waybar alacritty picom base-level git wayland wyland-protocols libinput wofi swaylock xdg-desktop-portal-hyprland mesa
+yay -S --noconfirm hyprland-git waybar alacritty picom base-level git wyland-protocols libinput wofi swaylock xdg-desktop-portal-hyprland mesa
 
 # Vérifier les pilotes graphiques
 if lspci | grep -q "NVIDIA"; then
